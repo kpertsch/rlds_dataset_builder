@@ -1,6 +1,6 @@
 # RLDS Dataset Conversion
 
-This repo demonstrates how to convert an existing dataset into RLDS format for RT-X integration.
+This repo demonstrates how to convert an existing dataset into RLDS format for X-embodiment experiment integration.
 It provides an example for converting a dummy dataset to RLDS. To convert your own dataset, fork this repo and 
 modify the example code for your dataset following the steps below.
 
@@ -17,7 +17,7 @@ conda activate rlds_env
 ```
 
 If you want to manually create an environment, the key packages to install are `tensorflow`, 
-`tensorflow_datasets`, `matplotlib`, `plotly` and `wandb`.
+`tensorflow_datasets`, `tensorflow_hub`, `apache_beam`, `matplotlib`, `plotly` and `wandb`.
 
 
 ## Run Example RLDS Dataset Creation
@@ -47,8 +47,10 @@ of the `ExampleDataset` class. Please add **all** data fields your raw data cont
 additional cameras, audio, tactile features etc. If your type of feature is not demonstrated in the example (e.g. audio),
 you can find a list of all supported feature types [here](https://www.tensorflow.org/datasets/api_docs/python/tfds/features?hl=en#classes).
 You can store step-wise info like camera images, actions etc in `'steps'` and episode-wise info like `collector_id` in `episode_metadata`.
-Please don't remove any of the existing features in the example (except for `wrist_image`), since they are required for RLDS compliance.
-Note that we store `language_instruction` in every step even though it is episode-wide information for easier downstream usage.
+Please don't remove any of the existing features in the example (except for `wrist_image` and `state`), since they are required for RLDS compliance.
+Please add detailed documentation what each feature consists of (e.g. what are the dimensions of the action space etc.).
+Note that we store `language_instruction` in every step even though it is episode-wide information for easier downstream usage (if your dataset
+does not define language instructions, you can fill in a dummy string like `pick up something`).
 
 3. **Modify Dataset Splits**: The function `_split_generator()` determines the splits of the generated dataset (e.g. training, validation etc.).
 If your dataset defines a train vs validation split, please provide the corresponding information to `_generate_examples()`, e.g. 
@@ -61,14 +63,22 @@ loaded, filled into the episode steps and then yielded as a packaged example. No
 particular stored episode, or any other random value. Just ensure to avoid using the same ID twice.
 
 5. **Provide Dataset Description**: Next, add a bibtex citation for your dataset in `CITATIONS.bib` and add a short description
-of your dataset in `README.md` inside the dataset folder. You can also provide a link to the dataset website.
+of your dataset in `README.md` inside the dataset folder. You can also provide a link to the dataset website and please add a
+few example trajectory images from the dataset for visualization.
+
+6. **Add Appropriate License**: Please add an appropriate license to the repository. 
 
 That's it! You're all set to run dataset conversion. Inside the dataset directory, run:
 ```
-tfds build
+tfds build --overwrite
 ```
 The command line output should finish with a summary of the generated dataset (including size and number of samples). 
 Please verify that this output looks as expected and that you can find the generated `tfrecord` files in `~/tensorflow_datasets/<name_of_your_dataset>`.
+
+**Note**: By default, dataset conversion is single-threaded. If you are parsing a large dataset, you can use parallel processing.
+For this, replace the last two lines of `_generate_examples()` with the commented-out `beam` commands. This will use 
+Apache Beam to automatically determine the appropriate number of workers for parsing your dataset. It does slow down the 
+start-up time of the script by ~5 minutes, so only use it for large datasets that take too long to parse in single-thread mode. 
 
 ## Visualize Converted Dataset
 To verify that the data is converted correctly, please run the data visualization script from the base directory:
