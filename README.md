@@ -16,7 +16,8 @@ Then activate the environment using:
 conda activate rlds_env
 ```
 
-If you want to manually create an environment, the key packages to install are `tensorflow` and `tensorflow_datasets`.
+If you want to manually create an environment, the key packages to install are `tensorflow`, 
+`tensorflow_datasets`, `matplotlib`, `plotly` and `wandb`.
 
 
 ## Run Example RLDS Dataset Creation
@@ -67,4 +68,13 @@ That's it! You're all set to run dataset conversion. Inside the dataset director
 tfds build
 ```
 The command line output should finish with a summary of the generated dataset (including size and number of samples). 
-Please verify that this output looks as expected and that you can find the generated `tfrecord` files in `~/tensorflow_datasets/<name_of_your_dataset>`. 
+Please verify that this output looks as expected and that you can find the generated `tfrecord` files in `~/tensorflow_datasets/<name_of_your_dataset>`.
+
+## Visualize Converted Dataset
+To verify that the data is converted correctly, please run the data visualization script from the base directory:
+```
+python3 visualize_dataset.py <name_of_your_dataset>
+``` 
+This will display a few random episodes from the dataset with language commands and visualize action and state histograms per dimension.
+Note, if you are running on a headless server you can modify `WANDB_ENTITY` at the top of `visualize_dataset.py` and 
+add your own WandB entity -- then the script will log all visualizations to WandB. 
