@@ -88,3 +88,21 @@ python3 visualize_dataset.py <name_of_your_dataset>
 This will display a few random episodes from the dataset with language commands and visualize action and state histograms per dimension.
 Note, if you are running on a headless server you can modify `WANDB_ENTITY` at the top of `visualize_dataset.py` and 
 add your own WandB entity -- then the script will log all visualizations to WandB. 
+
+## Add Transform for Target Spec
+
+For X-embodiment training we are using specific inputs / outputs for the model: input is a single RGB camera, output
+is an 8-dimensional action, consisting of end-effector position and orientation, gripper open/close and a episode termination
+action.
+
+The final step in adding your dataset to the training mix is to provide a transform function, that transforms a step
+from your original dataset above to the required training spec. Please follow the two simple steps below:
+
+1. **Modify Step Transform**: Modify the function `transform_step()` in `example_transform/transform.py`. The function 
+takes in a step from your dataset above and is supposed to map it to the desired output spec. The file contains a detailed
+description of the desired output spec.
+
+2. **Test Transform**: We provide a script to verify that the resulting __transformed__ dataset outputs match the desired
+output spec. Please run the following command: `python3 test_dataset_transform.py <name_of_your_dataset>`
+
+If the test passes successfully, you are ready to upload your dataset!
