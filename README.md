@@ -1,7 +1,7 @@
 # RLDS Dataset Conversion
 
 This repo demonstrates how to convert an existing dataset into RLDS format for X-embodiment experiment integration.
-It provides an example for converting a dummy dataset to RLDS. To convert your own dataset, fork this repo and 
+It provides an example for converting a dummy dataset to RLDS. To convert your own dataset, **fork** this repo and 
 modify the example code for your dataset following the steps below.
 
 ## Installation
@@ -106,3 +106,30 @@ description of the desired output spec.
 output spec. Please run the following command: `python3 test_dataset_transform.py <name_of_your_dataset>`
 
 If the test passes successfully, you are ready to upload your dataset!
+
+## Upload Your Data
+
+We provide a Google Cloud bucket that you can upload your data to. First, install `gsutil`, the Google cloud command 
+line tool. You can follow the installation instructions [here](https://cloud.google.com/storage/docs/gsutil_install).
+
+Next, authenticate your Google account with:
+```
+gcloud auth login
+``` 
+This will open a browser window that allows you to log into your Google account. Ideally, use the email address that
+you used to communicate with Karl, since he will automatically grant permission to the bucket for this email address. 
+If you want to upload data with a different email address / google account, please shoot Karl a quick email to ask 
+to grant permissions to that Google account!
+
+After logging in with a Google account that has access permissions, you can upload your data with the following 
+command:
+```
+gsutil -m cp -r ~/tensorflow_datasets/<name_of_your_dataset> gs://xembodiment_data
+``` 
+This will upload all data using multiple threads. If your internet connection gets interrupted anytime during the upload
+you can just rerun the command and it will resume the upload where it was interrupted. You can verify that the upload
+was successful by inspecting the bucket [here](https://console.cloud.google.com/storage/browser/xembodiment_data).
+
+The last step is to commit all changes to this repo and send Karl the link to the repo.
+
+**Thanks a lot for contributing your data! :)**
