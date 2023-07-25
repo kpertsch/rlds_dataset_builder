@@ -6,9 +6,9 @@ modify the example code for your dataset following the steps below.
 
 ## Installation
 
-First create a conda environment using the provided environment.yml file:
+First create a conda environment using the provided environment.yml file (use `environment_ubuntu.yml` or `environment_macos.yml` depending on the operating system you're using):
 ```
-conda env create -f environment.yml
+conda env create -f environment_ubuntu.yml
 ```
 
 Then activate the environment using:
