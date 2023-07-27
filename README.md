@@ -67,7 +67,8 @@ of your dataset in `README.md` inside the dataset folder. You can also provide a
 few example trajectory images from the dataset for visualization.
 
 6. **Add Appropriate License**: Please add an appropriate license to the repository. 
-Most common is the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
+Most common is the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license -- 
+you can copy it from [here](https://github.com/teamdigitale/licenses/blob/master/CC-BY-4.0).
 
 That's it! You're all set to run dataset conversion. Inside the dataset directory, run:
 ```
