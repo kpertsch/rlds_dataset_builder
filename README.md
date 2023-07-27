@@ -75,10 +75,18 @@ tfds build --overwrite
 The command line output should finish with a summary of the generated dataset (including size and number of samples). 
 Please verify that this output looks as expected and that you can find the generated `tfrecord` files in `~/tensorflow_datasets/<name_of_your_dataset>`.
 
-**Note**: By default, dataset conversion is single-threaded. If you are parsing a large dataset, you can use parallel processing.
+
+### Parallelizing Data Processing
+By default, dataset conversion is single-threaded. If you are parsing a large dataset, you can use parallel processing.
 For this, replace the last two lines of `_generate_examples()` with the commented-out `beam` commands. This will use 
-Apache Beam to automatically determine the appropriate number of workers for parsing your dataset. It does slow down the 
-start-up time of the script by ~5 minutes, so only use it for large datasets that take too long to parse in single-thread mode. 
+Apache Beam to parallelize data processing. Before starting the processing, you need to install your dataset package 
+by filling in the name of your dataset into `setup.py` and running `pip install -e .`
+
+Then, make sure that no GPUs are used during data processing (`export CUDA_VISIBLE_DEVICES=`) and run:
+```
+tfds build --overwrite --beam_pipeline_options="direct_running_mode=multi_processing,direct_num_workers=10"
+```
+You can specify the desired number of workers with the `direct_num_workers` argument.
 
 ## Visualize Converted Dataset
 To verify that the data is converted correctly, please run the data visualization script from the base directory:
