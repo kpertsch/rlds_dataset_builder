@@ -126,7 +126,8 @@ Next, authenticate your Google account with:
 ```
 gcloud auth login
 ``` 
-This will open a browser window that allows you to log into your Google account. Ideally, use the email address that
+This will open a browser window that allows you to log into your Google account (if you're on a headless server, 
+you can add the `--no-launch-browser` flag). Ideally, use the email address that
 you used to communicate with Karl, since he will automatically grant permission to the bucket for this email address. 
 If you want to upload data with a different email address / google account, please shoot Karl a quick email to ask 
 to grant permissions to that Google account!
