@@ -17,7 +17,7 @@ conda activate rlds_env
 ```
 
 If you want to manually create an environment, the key packages to install are `tensorflow`, 
-`tensorflow_datasets`, `tensorflow_hub`, `apache_beam`, `matplotlib`, `plotly` and `wandb`.
+`tensorflow_datasets`, `tensorflow_hub`, `matplotlib`, `plotly` and `wandb`.
 
 
 ## Run Example RLDS Dataset Creation
@@ -25,6 +25,7 @@ If you want to manually create an environment, the key packages to install are `
 Before modifying the code to convert your own dataset, run the provided example dataset creation script to ensure
 everything is installed correctly. Run the following lines to create some dummy data and convert it to RLDS.
 ```
+pip3 install -e .
 cd example_dataset
 python3 create_example_data.py
 tfds build
@@ -52,13 +53,14 @@ Please add detailed documentation what each feature consists of (e.g. what are t
 Note that we store `language_instruction` in every step even though it is episode-wide information for easier downstream usage (if your dataset
 does not define language instructions, you can fill in a dummy string like `pick up something`).
 
-3. **Modify Dataset Splits**: The function `_split_generator()` determines the splits of the generated dataset (e.g. training, validation etc.).
-If your dataset defines a train vs validation split, please provide the corresponding information to `_generate_examples()`, e.g. 
-by pointing to the corresponding folders (like in the example) or file IDs etc. If your dataset does not define splits,
-remove the `val` split and only include the `train` split. You can then remove all arguments to `_generate_examples()`.
+3. **Modify Dataset Splits**: The function `_split_paths()` determines the splits of the generated dataset (e.g. training, validation etc.).
+If your dataset defines a train vs validation split, please provide the corresponding file paths, e.g. 
+by pointing to the corresponding folders (like in the example). If your dataset does not define splits,
+remove the `val` split and only include the `train` split.
 
 4. **Modify Dataset Conversion Code**: Next, modify the function `_generate_examples()`. Here, your own raw data should be 
-loaded, filled into the episode steps and then yielded as a packaged example. Note that the value of the first return argument,
+loaded, filled into the episode steps and then yielded as a packaged example. Your iterator can yield multiple examples 
+for each input file path. Note that the value of the first return argument,
 `episode_path` in the example, is only used as a sample ID in the dataset and can be set to any value that is connected to the 
 particular stored episode, or any other random value. Just ensure to avoid using the same ID twice.
 
@@ -70,7 +72,9 @@ few example trajectory images from the dataset for visualization.
 Most common is the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license -- 
 you can copy it from [here](https://github.com/teamdigitale/licenses/blob/master/CC-BY-4.0).
 
-That's it! You're all set to run dataset conversion. Inside the dataset directory, run:
+That's it! You're all set to run dataset conversion. Before starting the processing, you need to install your 
+dataset package by modifying `example_dataset` to the name of your dataset in `setup.py` and running `pip install -e`.
+Then, make sure that no GPUs are used during data processing (`export CUDA_VISIBLE_DEVICES=`) and inside the dataset directory, run:
 ```
 tfds build --overwrite
 ```
@@ -79,16 +83,15 @@ Please verify that this output looks as expected and that you can find the gener
 
 
 ### Parallelizing Data Processing
-By default, dataset conversion is single-threaded. If you are parsing a large dataset, you can use parallel processing.
-For this, replace the last two lines of `_generate_examples()` with the commented-out `beam` commands. This will use 
-Apache Beam to parallelize data processing. Before starting the processing, you need to install your dataset package 
-by filling in the name of your dataset into `setup.py` and running `pip install -e .`
+By default, dataset conversion uses 10 parallel workers. If you are parsing a large dataset, you can increase the 
+number of used workers by increasing `N_WORKERS` in the dataset class. Try to use slightly fewer workers than the 
+number of cores in your machine (run `htop` in your command line if you don't know how many cores your machine has). 
 
-Then, make sure that no GPUs are used during data processing (`export CUDA_VISIBLE_DEVICES=`) and run:
-```
-tfds build --overwrite --beam_pipeline_options="direct_running_mode=multi_processing,direct_num_workers=10"
-```
-You can specify the desired number of workers with the `direct_num_workers` argument.
+The dataset value `MAX_PATHS_IN_MEMORY` controls how many filepaths will be processed in parallel before they get 
+written to disk sequentially. As a rule of thumb, setting this value as high as possible will make dataset conversion
+faster, but don't set it too high to not overflow the memory of your machine. Setting it to >10-20x the number of workers
+is usually a good default. You can monitor `htop` during conversion and reduce the value in case your memory overflows.
+
 
 ## Visualize Converted Dataset
 To verify that the data is converted correctly, please run the data visualization script from the base directory:

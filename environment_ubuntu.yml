@@ -27,7 +27,6 @@ dependencies:
   - pip:
       - absl-py==1.4.0
       - anyio==3.7.1
-      - apache-beam==2.49.0
       - appdirs==1.4.4
       - array-record==0.4.0
       - astunparse==1.6.3
