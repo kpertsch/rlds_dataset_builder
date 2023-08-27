@@ -8,11 +8,11 @@ import tensorflow_datasets as tfds
 from example_dataset.conversion_utils import MultiThreadedDatasetBuilder
 
 
-_embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder-large/5")
-
-
 def _generate_examples(paths) -> Iterator[Tuple[str, Any]]:
     """Yields episodes for list of data paths."""
+    # the line below needs to be *inside* generate_examples so that each worker creates it's own model
+    # creating one shared model outside this function would cause a deadlock
+    _embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder-large/5")
 
     def _parse_example(episode_path):
         # load raw data --> this should change for your dataset
@@ -141,6 +141,7 @@ class ExampleDataset(MultiThreadedDatasetBuilder):
 
     def _split_paths(self):
         """Define filepaths for data splits."""
+        print(self.info)
         return {
             'train': glob.glob('data/train/episode_*.npy'),
             'val': glob.glob('data/val/episode_*.npy')
