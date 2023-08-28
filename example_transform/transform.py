@@ -1,7 +1,7 @@
 from typing import Any, Dict
 import numpy as np
 from PIL import Image
-
+from scipy.spatial.transform import Rotation as R
 
 ################################################################################################
 #                                        Target config                                         #
@@ -63,12 +63,35 @@ def transform_step(step: Dict[str, Any]) -> Dict[str, Any]:
        Input is dict of numpy arrays."""
     img = Image.fromarray(step['observation']['image']).resize(
         (128, 128), Image.Resampling.LANCZOS)
+    curr_pos = step['observation']['state'][14:17]
+    curr_quat = step['observation']['state'][17:21]
+    curr_rot = R.from_quat(curr_quat)
+
+    resi_pos = step['action'][:3]
+    resi_axisAngle = step['action'][3:6]
+
+    target_position = curr_pos + resi_pos
+    target_position = np.array(target_position, dtype=np.float32)
+
+    resi_rot = R.from_rotvec(resi_axisAngle)
+    target_rot = resi_rot*curr_rot
+
+    target_euler_angles = target_rot.as_euler('ZYX') # extrinsic 
+    target_euler_angles = np.array(target_euler_angles, dtype=np.float32)
+
+    # rotation angle verification
+    # mat = target_rot.as_matrix()
+    # yaw=np.arctan2(mat[1,0],mat[0,0])
+    # pitch=np.arctan2(-mat[2,0],np.sqrt(mat[2,1]**2+mat[2,2]**2))
+    # roll=np.arctan2(mat[2,1],mat[2,2])
+    # print([yaw, pitch, roll], target_euler_angles)
+
     transformed_step = {
         'observation': {
             'image': np.array(img),
         },
         'action': np.concatenate(
-            [step['action'][:3], step['action'][5:8], step['action'][-2:]]),
+            [target_position, target_euler_angles, np.array([0., int(step['is_last'])], dtype=np.float32) ]),
     }
 
     # copy over all other fields unchanged
