@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 import os
 
-N_TRAIN_EPISODES = 2
+N_TRAIN_EPISODES = 100
 # EPISODE_LENGTH = 100
 
 
@@ -14,13 +14,16 @@ def create_episode(episode_log_path, output_path):
     episode = []
 
     file_names = sorted([f for f in os.listdir(episode_log_path) if (f.endswith('.pkl') and not f.startswith('task'))], key=lambda x: int(x.split('.')[0]))
-    instruction = 'toppling a jar' # TODO: instruction should be gathered from task.pkl
+    instruction_path = os.path.join(episode_log_path, 'task.pkl')
+    with open(instruction_path, 'rb') as file:
+        instruction_data = pickle.load(file)
+    instruction = instruction_data['language_instruction']
 
     robot_frame_offset = np.array([0.5, 0.0, -0.4], dtype=np.float32)
 
     for filename in file_names:
         file_path = os.path.join(episode_log_path, filename)
-        print(f'{filename} is processing')
+        # print(f'{filename} is processing')
         with open(file_path, 'rb') as file:
             log = pickle.load(file)
 
@@ -51,7 +54,7 @@ def create_episode(episode_log_path, output_path):
 print("Generating train examples...")
 os.makedirs('data/train', exist_ok=True)
 episode_log_path = '/home/user/workspace/rlds_dataset_builder/train_data/log'
-for i in tqdm.tqdm(range(N_TRAIN_EPISODES)):
+for i in tqdm.tqdm(range(100, 201)):
     create_episode(episode_log_path+f'_{i}', f'data/train/episode_{i}.npy')
 
 print('Successfully created example data!')
