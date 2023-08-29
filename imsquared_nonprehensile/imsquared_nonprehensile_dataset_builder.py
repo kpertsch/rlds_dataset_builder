@@ -34,14 +34,16 @@ class ImsquaredNonprehensile(tfds.core.GeneratorBasedBuilder):
                         'state': tfds.features.Tensor(
                             shape=(21,),
                             dtype=np.float32,
-                            doc='Robot state, consists of [7x robot joint angles, '
-                                '7x robot joint velocities, 7x end-effector position and quaternion].',
+                            doc='Robot state, consists of [joint_states, end_effector_pose].'
+                            'Joint states are 14-dimensional, formatted '
+                            'in the order of [q_0, w_0, q_1, w_0, ...].'
+                            'In other words,  joint positions and velocities are interleaved.'
+                            'The end-effector pose is 7-dimensional, formatted '
+                            'in the order of [position, quaternion].'
+                            'The quaternion is formatted in (x,y,z,w) order. '
+                            'The end-effector pose references the tool frame, '
+                            'in the center of the two fingers of the gripper.'
                         ),
-                        # 'depth': tfds.features.Tensor(
-                        #     shape=(480, 640),
-                        #     dtype=np.float32,
-                        #     doc='Main camera depth observation',
-                        # ),
                         'partial_pointcloud': tfds.features.Tensor(
                             shape=(512, 3),
                             dtype=np.float32,
@@ -54,7 +56,9 @@ class ImsquaredNonprehensile(tfds.core.GeneratorBasedBuilder):
                         doc='Robot action, consists of [3x end-effector position residual, '
                             '3x end-effector axis-angle residual, '
                             '7x robot joint k_p gain coefficient, '
-                            '7x robot joint damping ratio coefficient].' ,
+                            '7x robot joint damping ratio coefficient].'
+                            'The action residuals are global, i.e. multiplied on the'
+                            'left-hand side of the current end-effector state.'
                     ),
                     'discount': tfds.features.Scalar(
                         dtype=np.float32,
@@ -116,7 +120,6 @@ class ImsquaredNonprehensile(tfds.core.GeneratorBasedBuilder):
                     'observation': {
                         'image': step['image'],
                         'state': step['state'],
-                        # 'depth': step['depth'],
                         'partial_pointcloud': step['partial_pointcloud'],
                     },
                     'action': step['action'],
